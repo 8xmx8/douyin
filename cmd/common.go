@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/Godvictory/douyin/cmd/flags"
+	"github.com/Godvictory/douyin/internal/bootstrap"
 	"github.com/Godvictory/douyin/utils"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -23,6 +24,10 @@ func initServer() {
 	}
 	logrus.SetFormatter(&formatter)
 	// 服务初始化
+	bootstrap.InitConf()
+	bootstrap.InitLog()
+	bootstrap.InitDb()
+	bootstrap.InitRdb()
 }
 
 // initDaemon 守护进程初始化
