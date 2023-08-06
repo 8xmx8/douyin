@@ -9,11 +9,11 @@ type (
 	// User 用户信息表
 	User struct {
 		Model
-		Name          string `json:"name" gorm:"index:,unique;size:32;comment:用户名称"`
-		Pawd          string `json:"-" gorm:"size:128;comment:用户密码"`
-		FollowCount   int64  `json:"follow_count" gorm:"default:0;comment:关注总数"`
-		FollowerCount int64  `json:"follower_count" gorm:"default:0;comment:粉丝总数"`
-		//IsFollow        bool       `json:"is_follow" gorm:"-"` // 是否关注
+		Name            string     `json:"name" gorm:"index:,unique;size:32;comment:用户名称"`
+		Pawd            string     `json:"-" gorm:"size:128;comment:用户密码"`
+		FollowCount     int64      `json:"follow_count" gorm:"default:0;comment:关注总数"`
+		FollowerCount   int64      `json:"follower_count" gorm:"default:0;comment:粉丝总数"`
+		IsFollow        bool       `json:"is_follow" gorm:"-"` // 是否关注
 		Avatar          string     `json:"avatar" gorm:"comment:用户头像"`
 		BackgroundImage string     `json:"background_image" gorm:"comment:用户个人页顶部大图"`
 		Signature       string     `json:"signature" gorm:"default:此人巨懒;comment:个人简介"`
@@ -39,6 +39,15 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if u.ID == 0 {
 		u.ID = utils.GetId(2, 114514)
 	}
+	return
+}
+func (u *User) AfterFind(tx *gorm.DB) (err error) {
+	if uid, ok := tx.Get("user_id"); ok || u.ID != 0 {
+		result := map[string]any{}
+		u.IsFollow = tx.Table("user_follower").Where("follower_id = ? AND user_id = ?", uid, u.ID).Take(&result).RowsAffected == 1
+	}
+	tx.Table("user_follow").Where("user_id = ?", u.ID).Count(&u.FollowCount)
+	tx.Table("user_follower").Where("user_id = ?", u.ID).Count(&u.FollowerCount)
 	return
 }
 

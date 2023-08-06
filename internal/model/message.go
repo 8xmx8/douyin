@@ -14,7 +14,7 @@ type (
 		ToUser     User   `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 		FromUser   User   `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 		Content    string `json:"content" gorm:"comment:消息内容"`
-		//CreateTime string `json:"create_time" gorm:"comment:消息创建时间"`
+		CreateTime string `json:"create_time" gorm:"comment:消息创建时间"`
 	}
 )
 

@@ -48,6 +48,9 @@ func (u *Video) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 	return
 }
+func (uc *UserCreation) BeforeCreate(tx *gorm.DB) (err error) {
+	return
+}
 
 func init() {
 	addMigrate(&Video{})
