@@ -2,11 +2,11 @@ package db
 
 import (
 	"context"
+	"github.com/Godvictory/douyin/internal/model"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/Ocyss/douyin/internal/model"
 	"github.com/redis/go-redis/v9"
 )
 
