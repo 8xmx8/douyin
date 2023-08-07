@@ -3,8 +3,9 @@ package tokens
 import (
 	"errors"
 	"github.com/Godvictory/douyin/internal/conf"
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var JwtKey = []byte(conf.Conf.JwtSecret)

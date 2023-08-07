@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // 总结：如果需要查出所有关联的数据就用Preload，查一条关联数据用Related
@@ -16,13 +17,15 @@ type Model struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"comment:删除时间"`
 }
 
-func (u *Model) BeforeCreate(tx *gorm.DB) (err error) {
+func (m *Model) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
 func GetMigrate() []any {
 	return migrate
 }
+
+// addMigrate 加入自动迁移列表中
 func addMigrate(model ...any) {
 	migrate = append(migrate, model...)
 }

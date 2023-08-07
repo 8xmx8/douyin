@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"github.com/Godvictory/douyin/internal/model"
 	"github.com/Godvictory/douyin/utils/upload"
-	"mime/multipart"
-
 	"gorm.io/gorm"
+	"mime/multipart"
 )
 
 // Feed 获取视频流
@@ -21,7 +20,19 @@ func Feed(uid int64, ip string, latestTime string) ([]model.Video, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// 交给钩子
+	//for i := range data {
+	//	var wg sync.WaitGroup
+	//	if uid != 0 {
+	//		wg.Add(1)
+	//		go model.getIsFavorite(&wg, uid, data[i].ID, &data[i].IsFavorite) // 是否点赞
+	//	}
+	//	wg.Add(3)
+	//	go model.getFavoriteCount(&wg, data[i].ID, &data[i].FavoriteCount) // 喜欢总数
+	//	go model.getCommentCount(&wg, data[i].ID, &data[i].CommentCount)   // 评论总数
+	//	go model.setPlayCount(&wg, ip, data[i].ID, &data[i].PlayCount)     // 播放量
+	//	wg.Wait()
+	//}
 	return data, nil
 }
 

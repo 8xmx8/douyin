@@ -3,10 +3,11 @@ package cmd
 import (
 	"fmt"
 	"github.com/Godvictory/douyin/cmd/flags"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -22,6 +23,7 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
 func init() {
 	var baseDir, dataDir string
 	var err error
@@ -46,5 +48,4 @@ func init() {
 		Use:    "no-help",
 		Hidden: true,
 	})
-
 }

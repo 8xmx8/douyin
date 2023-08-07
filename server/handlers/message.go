@@ -6,8 +6,6 @@ import (
 	"github.com/Godvictory/douyin/server/common"
 	"github.com/Godvictory/douyin/utils/tokens"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,7 +28,7 @@ func MessageChat(c *gin.Context) (int, any) {
 	if err != nil {
 		return Err("Token 错误", err)
 	}
-	log.Debug(reqs)
+
 	data, err := db.MessageGet(claims.ID, reqs.ToUserId, reqs.PreMsgTime)
 	if err != nil {
 		return Err("聊天记录获取失败", err)

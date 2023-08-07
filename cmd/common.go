@@ -10,15 +10,18 @@ import (
 	"strconv"
 )
 
-var pid = -1
-var pidFile string
+var (
+	pid     = -1
+	pidFile string
+)
 
 // initServer 初始化服务
 func initServer() {
+	// 配置日志格式
 	formatter := logrus.TextFormatter{
 		ForceColors:               true,
 		EnvironmentOverrideColors: true,
-		TimestampFormat:           "2023-7-23 18:09:23",
+		TimestampFormat:           "2006-01-02 15:04:05",
 		FullTimestamp:             true,
 		DisableQuote:              true,
 	}

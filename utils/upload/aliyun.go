@@ -3,8 +3,9 @@ package upload
 import (
 	"fmt"
 	"github.com/Godvictory/douyin/internal/conf"
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"io"
+
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
 func Aliyun(uploadName string, file io.Reader) (string, error) {
@@ -27,5 +28,5 @@ func Aliyun(uploadName string, file io.Reader) (string, error) {
 		return "", err
 	}
 	// 拼接链接,默认使用https
-	return fmt.Sprintf("https://%s.%s/%s", AliyunBucketName, AliyunEndpoint, uploadName), nil
+	return fmt.Sprintf("https://%s.%s/", AliyunBucketName, AliyunEndpoint), nil
 }

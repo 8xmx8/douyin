@@ -22,8 +22,8 @@ type (
 		Signature       string `json:"signature" form:"signature"`                  // 个人简介
 	}
 	userReqs struct {
-		ID    int64  `json:"user_id" form:"user_id" binding:"required"` // 用户id
-		Token string `json:"token" form:"token" binding:"required"`     // 用户鉴权token
+		ID    int64  `json:"user_id" form:"user_id"`                // 用户id
+		Token string `json:"token" form:"token" binding:"required"` // 用户鉴权token
 	}
 	userInfoResp struct {
 		ID              int64  `json:"user_id"`          // 用户id

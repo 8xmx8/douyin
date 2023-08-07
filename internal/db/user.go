@@ -5,6 +5,7 @@ import (
 	"gopkg.in/hlandau/passlib.v1"
 )
 
+// Register 注册
 func Register(data *model.User) (msg string, err error) {
 	hash, err := passlib.Hash(data.Pawd)
 	if err != nil {
@@ -20,6 +21,7 @@ func Register(data *model.User) (msg string, err error) {
 	return "", nil
 }
 
+// Login 登录
 func Login(user, pawd string) (data *model.User, msg string, err error) {
 	data = new(model.User)
 	// 根据用户名获取对应的全部数据
@@ -41,6 +43,7 @@ func Login(user, pawd string) (data *model.User, msg string, err error) {
 	return
 }
 
+// UserInfo 获取用户信息
 func UserInfo(id int64) (data model.User, msg string, err error) {
 	data.ID = id
 	err = db.Set("user_id", id).Find(&data).Error

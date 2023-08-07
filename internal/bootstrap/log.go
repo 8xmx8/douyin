@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/internal/conf"
-	"github.com/natefinch/lumberjack"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
+
+	"github.com/natefinch/lumberjack"
+	log "github.com/sirupsen/logrus"
 )
 
 func InitLog() {

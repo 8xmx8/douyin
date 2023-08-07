@@ -1,19 +1,16 @@
 package db
 
 import (
-	"context"
-	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/internal/model"
-	"github.com/redis/go-redis/v9"
+	"reflect"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"reflect"
-	"time"
 )
 
 var db *gorm.DB
-var rdb *redis.Client
 
+// InitDb 初始化数据库服务
 func InitDb(d *gorm.DB) {
 	db = d
 	for _, m := range model.GetMigrate() {
@@ -32,28 +29,11 @@ func InitDb(d *gorm.DB) {
 	}
 }
 
-func InitRdb(r *redis.Client) {
-	rdb = r
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	_, err := rdb.Ping(ctx).Result()
-	if err != nil {
-		log.Fatalf("连接redis出错，错误信息：%v", err)
-	}
-	// 内存模式下清空 Redis
-	if flags.Memory {
-		rdb.FlushAll(ctx)
-	}
-}
-
+// id 快捷用法返回一个Model{id:val}
 func id(val int64) model.Model {
 	return model.Model{ID: val}
 }
 
 func GetDb() *gorm.DB {
 	return db
-}
-
-func GetRdb() *redis.Client {
-	return rdb
 }

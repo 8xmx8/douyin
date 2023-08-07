@@ -14,6 +14,7 @@ func GetId(a, b int64) int64 {
 	return now.UnixNano()*a - b
 }
 
+// RandString 获取随机字符串
 func RandString(n int) string {
 	b := make([]byte, n)
 	for i := range b {

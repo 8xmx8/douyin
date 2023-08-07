@@ -3,9 +3,8 @@ package server
 import (
 	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/server/handlers"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type MyHandler func(*gin.Context) (int, any)

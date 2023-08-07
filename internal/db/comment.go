@@ -1,27 +1,11 @@
 package db
 
 import (
-	"context"
 	"github.com/Godvictory/douyin/internal/model"
-	"time"
 )
 
 // CommentPush 发送评论
 func CommentPush(uid, vid int64, content string) (*model.Comment, error) {
-	data := model.Comment{UserID: uid, VideoID: vid, Content: content}
-	err := db.Create(&data).Error
-	if err != nil {
-		return nil, err
-	}
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-		key := getVideoCommentCountKey(vid)
-		rdb.Incr(ctx, key)
-	}()
-	return &data, nil
-}
-func CommentPushFinal(uid, vid int64, content string) (*model.Comment, error) {
 	data := model.Comment{UserID: uid, VideoID: vid, Content: content}
 	err := db.Create(&data).Error
 	if err != nil {

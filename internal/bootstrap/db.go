@@ -5,6 +5,7 @@ import (
 	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/internal/conf"
 	"github.com/Godvictory/douyin/internal/db"
+	"github.com/Godvictory/douyin/internal/model"
 	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -68,7 +69,7 @@ func InitDb() {
 		log.Fatalf("无法连接到数据库:%s", err.Error())
 	}
 	db.InitDb(dB)
-	log.Info("初始化 Database 成功!", dB)
+	log.Info("初始化 Database 成功!")
 }
 
 func InitRdb() {
@@ -79,6 +80,6 @@ func InitRdb() {
 		Password: rconf.Password,
 		DB:       rconf.Db,
 	})
-	db.InitRdb(rdb)
-	log.Info("初始化 Redis 成功! ", rdb)
+	model.InitRdb(rdb)
+	log.Info("初始化 Redis 成功!")
 }

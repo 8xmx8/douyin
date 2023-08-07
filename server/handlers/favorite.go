@@ -42,11 +42,13 @@ func FavoriteList(c *gin.Context) (int, any) {
 	if err := c.ShouldBindQuery(&reqs); err != nil {
 		return ErrParam(err)
 	}
-	_, err := tokens.CheckToken(reqs.Token)
+	claims, err := tokens.CheckToken(reqs.Token)
 	if err != nil {
 		return Err("Token 错误", err)
 	}
-
+	if reqs.ID == 0 {
+		reqs.ID = claims.ID
+	}
 	data, err = db.VideoLikeList(reqs.ID)
 	if err != nil {
 		return Err("网卡了,再试一次吧", err)
