@@ -48,7 +48,10 @@ func Logger(logger log.FieldLogger, notLogged ...string) gin.HandlerFunc {
 			return
 		}
 
+		code, _ := c.Get("code")
+		msg, _ := c.Get("msg")
 		entry := logger.WithFields(log.Fields{
+			"msg":        msg,
 			"hostname":   hostname,
 			"statusCode": statusCode,
 			//"latency":    latency, // time to process
@@ -63,13 +66,17 @@ func Logger(logger log.FieldLogger, notLogged ...string) gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			entry.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
 		} else {
-			msg := fmt.Sprintf("\"%s %s Code:%d (%dms)\"", c.Request.Method, path, statusCode, latency)
+			msg := fmt.Sprintf("\"%s %s Code:%d (%dms)\"", c.Request.Method, path, code, latency)
 			if statusCode >= http.StatusInternalServerError {
 				entry.Error(msg, clientUserAgent)
 			} else if statusCode >= http.StatusBadRequest {
 				entry.Warn(msg, clientUserAgent)
 			} else {
-				entry.Info(msg)
+				if code == 0 {
+					entry.Info(msg)
+				} else {
+					entry.Warn(msg)
+				}
 			}
 		}
 	}

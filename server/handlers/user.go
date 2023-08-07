@@ -105,9 +105,12 @@ func UserInfo(c *gin.Context) (int, any) {
 		return ErrParam(err)
 	}
 
-	_, err := tokens.CheckToken(reqs.Token)
+	claims, err := tokens.CheckToken(reqs.Token)
 	if err != nil {
 		return Err("Token 错误", err)
+	}
+	if reqs.ID == 0 {
+		reqs.ID = claims.ID
 	}
 	data, msg, err := db.UserInfo(reqs.ID)
 	if err != nil {

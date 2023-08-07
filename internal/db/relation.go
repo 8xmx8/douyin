@@ -7,53 +7,60 @@ import (
 	"gorm.io/gorm"
 )
 
+// RelationAction 关注/取关
 func RelationAction(fid, tid int64, ActionType int) error {
 	var (
-		associationA, associationB *gorm.Association
-		errA, errB                 error
+		association *gorm.Association
+		err         error
 	)
 	tx := db.Begin()
-	associationA = tx.Model(&model.User{Model: id(fid)}).Association("Follow")
-	associationB = tx.Model(&model.User{Model: id(tid)}).Association("Follower")
+	association = tx.Model(&model.User{Model: id(fid)}).Association("Follow")
 	switch ActionType {
 	case 1:
-		errA = associationA.Append(&model.User{Model: id(tid)})
-		errB = associationB.Append(&model.User{Model: id(fid)})
+		err = association.Append(&model.User{Model: id(tid)})
 	case 2:
-		errA = associationA.Delete(&model.User{Model: id(tid)})
-		errB = associationB.Delete(&model.User{Model: id(fid)})
+		err = association.Delete(&model.User{Model: id(tid)})
 	default:
 		return errors.New("不合法的 ActionType")
 	}
-	if errA != nil || errB != nil {
+	if err != nil {
 		tx.Rollback()
-		return errors.Join(errA, errB)
+		return err
 	}
 	tx.Commit()
 	return nil
 }
 
-func RelationFollowGet(uid int64) ([]*model.User, error) {
+// RelationFollowGet 获取关注列表 uid:本人id tid:待查id
+func RelationFollowGet(uid, tid int64) ([]*model.User, error) {
 	var data []*model.User
-	err := db.Set("user_id", uid).Model(&model.User{Model: id(uid)}).Association("Follow").Find(&data)
+	err := db.Set("user_id", uid).Model(&model.User{Model: id(tid)}).Association("Follow").Find(&data)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func RelationFollowerGet(uid int64) ([]*model.User, error) {
+// RelationFollowerGet 获取粉丝列表 uid:本人id tid:待查id
+func RelationFollowerGet(uid, tid int64) ([]*model.User, error) {
 	var data []*model.User
-	err := db.Set("user_id", uid).Model(&model.User{Model: id(uid)}).Association("Follower").Find(&data)
+	err := db.Set("user_id", uid).Table("user").
+		Joins("JOIN user_follow ON `user`.`id` = `user_follow`.`user_id` AND `user_follow`.`follow_id` = ?", tid).
+		Select("`user`.*").Find(&data).Error
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func RelationFriendGet(uid int64) ([]*model.User, error) {
+// RelationFriendGet 获取好友列表 uid:本人id tid:待查id
+func RelationFriendGet(uid, tid int64) ([]*model.User, error) {
 	var data []*model.User
-	err := db.Set("user_id", uid).Model(&model.User{Model: id(uid)}).Association("Friend").Find(&data)
+	err := db.Set("user_id", uid).
+		Table("(SELECT `user`.* FROM `user` JOIN `user_follow` ON `user`.`id` = `user_follow`.`follow_id` AND `user_follow`.`user_id` = ?) as t", tid).
+		Joins("JOIN `user_follow` ON `t`.`id` = `user_follow`.`user_id`").
+		Where(" `user_follow`.`follow_id` = ?", tid).
+		Select("`t`.*").Find(&data).Error
 	if err != nil {
 		return nil, err
 	}

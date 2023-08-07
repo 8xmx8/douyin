@@ -3,11 +3,12 @@ package server
 import (
 	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/server/handlers"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-type MyHandler func(ctx *gin.Context) (int, any)
+type MyHandler func(*gin.Context) (int, any)
 
 // decorator 装饰器
 func decorator() func(h MyHandler) gin.HandlerFunc {
@@ -18,6 +19,7 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 				"status_code": code,
 				"status_msg":  "",
 			}
+			c.Set("code", code)
 			if code == 0 {
 				// 判断数据类型
 				if val, ok := data.(handlers.H); ok {
@@ -25,11 +27,13 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 						req[k] = v
 					}
 				}
+
 				req["status_msg"] = "ok!"
 				c.JSON(200, req)
 			} else {
 				switch data.(type) {
 				case string:
+					c.Set("msg", data)
 					req["status_msg"] = data
 				case error:
 					// 判断是否debug模式，是的话返回错误信息
@@ -39,6 +43,7 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 				case handlers.MyErr:
 					e := data.(handlers.MyErr)
 					req["status_msg"] = e.Msg
+					c.Set("msg", e.Msg)
 					// 判断是否debug模式，是的话返回错误信息
 					if flags.Dev || flags.Debug {
 						errs := make([]string, 0, 10)
@@ -57,6 +62,7 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 		}
 	}
 }
+
 func newRouter(group *gin.RouterGroup, method string, path string, handler MyHandler, handlers ...gin.HandlerFunc) {
 	if handler != nil {
 		// 未开发的路由传nil,不挂载

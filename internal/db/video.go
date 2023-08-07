@@ -6,7 +6,8 @@ import (
 	"github.com/Godvictory/douyin/internal/model"
 	"github.com/Godvictory/douyin/utils/upload"
 	"mime/multipart"
-	"sync"
+
+	"gorm.io/gorm"
 )
 
 // Feed 获取视频流
@@ -21,26 +22,15 @@ func Feed(uid int64, ip string, latestTime string) ([]model.Video, error) {
 		return nil, err
 	}
 
-	for i := range data {
-		var wg sync.WaitGroup
-		if uid != 0 {
-			wg.Add(1)
-			go getIsFavorite(&wg, uid, data[i].ID, &data[i].IsFavorite) // 是否点赞
-		}
-		wg.Add(3)
-		go getFavoriteCount(&wg, data[i].ID, &data[i].FavoriteCount) // 喜欢总数
-		go getCommentCount(&wg, data[i].ID, &data[i].CommentCount)   // 评论总数
-		go setPlayCount(&wg, ip, data[i].ID, &data[i].PlayCount)     // 播放量
-		wg.Wait()
-	}
 	return data, nil
 }
 
 // VideoUpload 视频投稿
-func VideoUpload(uid int64, file multipart.File, url, title string, UserCreations []*model.UserCreation) (int64, string, error) {
+func VideoUpload(uid int64, file multipart.File, PlayUrl, CoverUrl, title string, UserCreations []*model.UserCreation) (int64, string, error) {
 	data := model.Video{
 		AuthorID: uid,
-		PlayUrl:  url,
+		PlayUrl:  PlayUrl,
+		CoverUrl: CoverUrl,
 		Title:    title,
 	}
 	// 开启事务,上传失败不添加数据
@@ -52,12 +42,14 @@ func VideoUpload(uid int64, file multipart.File, url, title string, UserCreation
 	}
 	if file != nil {
 		// reader := bytes.NewReader(file)
-		url, err := upload.Aliyun(fmt.Sprintf("t/%d.mp4", data.ID), file)
+		fname := fmt.Sprintf("t/%d.mp4", data.ID)
+		url, err := upload.Aliyun(fname, file)
 		if err != nil {
 			tx.Rollback()
 			return 0, "上传出错...", err
 		}
-		data.PlayUrl = url
+		data.PlayUrl = url + fname
+		data.CoverUrl = url + fmt.Sprintf("t/%d.jpg", data.ID)
 		err = tx.Save(&data).Error
 		if err != nil {
 			tx.Rollback()
@@ -72,6 +64,7 @@ func VideoUpload(uid int64, file multipart.File, url, title string, UserCreation
 			tx.Rollback()
 			return 0, "创建出错...", err
 		}
+		tx.Model(&model.User{Model: id(uc.UserID)}).UpdateColumn("work_count", gorm.Expr("work_count + ?", 1))
 	}
 	tx.Commit()
 	return data.ID, "", nil
