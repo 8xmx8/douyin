@@ -5,8 +5,6 @@ import (
 	"github.com/Godvictory/douyin/utils"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-
 	"gorm.io/gorm"
 )
 
@@ -48,10 +46,7 @@ type (
 	}
 )
 
-var (
-	userFollowCountKey   = make([]byte, 0, 50)
-	userFollowerCountKey = make([]byte, 0, 50)
-)
+var userCountKey = make([]byte, 0, 50)
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if u.ID == 0 {
@@ -77,38 +72,57 @@ func (u *User) AfterFind(tx *gorm.DB) (err error) {
 	}
 	// tx.Table("user_follow").Where("user_id = ?", u.ID).Count(&u.FollowCount)
 	// tx.Table("user_follow").Where("follow_id = ?", u.ID).Count(&u.FollowerCount)
-	u.FollowCount = getUserFollowCount(tx, u.ID)
-	u.FollowerCount = getUserFollowerCount(tx, u.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	key := getKey(u.ID, userCountKey)
+	u.FollowCount, _ = rdb.HGet(ctx, key, "follow_count").Int64()
+	u.FollowerCount, _ = rdb.HGet(ctx, key, "follower_count").Int64()
 	u.TotalFavorited = getUserTotalFavorited(tx, u.ID)
 	u.FavoriteCount = getUserFavoriteCount(tx, u.ID)
 	return
 }
 
-// getUserFollowCount 获取关注数
-func getUserFollowCount(tx *gorm.DB, uid int64) int64 {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+func (u *User) HIncrByFollowCount(incr int64) int64 {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	key := getKey(uid, userFollowCountKey)
-	FollowCount, err := rdb.Get(ctx, key).Int64()
-	if err == redis.Nil {
-		tx.Table("user_follow").Where("user_id = ?", uid).Count(&FollowCount)
-		_ = rdb.Set(ctx, key, FollowCount, 3*time.Second)
-	}
-	return FollowCount
+	key := getKey(u.ID, videoCountKey)
+	u.FollowCount, _ = rdb.HIncrBy(ctx, key, "follow_count", incr).Result()
+	return u.FollowCount
 }
 
-// getUserFollowerCount 获取粉丝数
-func getUserFollowerCount(tx *gorm.DB, uid int64) int64 {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+func (u *User) HIncrByFollowerCount(incr int64) int64 {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	key := getKey(uid, userFollowerCountKey)
-	FollowerCount, err := rdb.Get(ctx, key).Int64()
-	if err == redis.Nil {
-		tx.Table("user_follow").Where("follow_id = ?", uid).Count(&FollowerCount)
-		_ = rdb.Set(ctx, key, FollowerCount, 3*time.Second)
-	}
-	return FollowerCount
+	key := getKey(u.ID, videoCountKey)
+	u.FollowerCount, _ = rdb.HIncrBy(ctx, key, "follower_count", incr).Result()
+	return u.FollowerCount
 }
+
+//// getUserFollowCount 获取关注数
+//func getUserFollowCount(tx *gorm.DB, uid int64) int64 {
+//	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+//	defer cancel()
+//	key := getKey(uid, userFollowCountKey)
+//	FollowCount, err := rdb.Get(ctx, key).Int64()
+//	if err == redis.Nil {
+//		tx.Table("user_follow").Where("user_id = ?", uid).Count(&FollowCount)
+//		_ = rdb.Set(ctx, key, FollowCount, 3*time.Second)
+//	}
+//	return FollowCount
+//}
+//
+//// getUserFollowerCount 获取粉丝数
+//func getUserFollowerCount(tx *gorm.DB, uid int64) int64 {
+//	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+//	defer cancel()
+//	key := getKey(uid, userFollowerCountKey)
+//	FollowerCount, err := rdb.Get(ctx, key).Int64()
+//	if err == redis.Nil {
+//		tx.Table("user_follow").Where("follow_id = ?", uid).Count(&FollowerCount)
+//		_ = rdb.Set(ctx, key, FollowerCount, 3*time.Second)
+//	}
+//	return FollowerCount
+//}
 
 // getUserTotalFavorited 获取获赞数量
 func getUserTotalFavorited(tx *gorm.DB, uid int64) (totalFavorited int64) {
@@ -126,6 +140,5 @@ func getUserFavoriteCount(tx *gorm.DB, uid int64) (favoriteCount int64) {
 
 func init() {
 	addMigrate(&User{}, &UserCreation{})
-	userFollowCountKey = append(userFollowCountKey, "user:follow_count/"...)
-	userFollowerCountKey = append(userFollowerCountKey, "user:follower_count/"...)
+	userCountKey = append(userCountKey, "user_count:"...)
 }

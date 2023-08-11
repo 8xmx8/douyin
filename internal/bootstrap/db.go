@@ -54,16 +54,16 @@ func InitDb() {
 		Logger: logger.New(
 			stdlog.New(log.StandardLogger().Out, "\r\n", stdlog.LstdFlags),
 			logger.Config{
-				SlowThreshold:             time.Second,
-				LogLevel:                  logLevel,
-				IgnoreRecordNotFoundError: true,
-				Colorful:                  true,
+				SlowThreshold:             time.Second, // 设置慢查询阈值
+				LogLevel:                  logLevel,    // 设置日志级别
+				IgnoreRecordNotFoundError: true,        // 忽略记录未找到的错误
+				Colorful:                  true,        // 启用彩色日志输出
 			},
 		),
 		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
+			SingularTable: true, //表名以单数形式命名
 		},
-		TranslateError: true,
+		TranslateError: true, // 启用错误翻译功能
 	})
 	if err != nil {
 		log.Fatalf("无法连接到数据库:%s", err.Error())

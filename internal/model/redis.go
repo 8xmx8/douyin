@@ -34,7 +34,7 @@ func GetRdb() *redis.Client {
 
 // getKey 字符串快速拼接
 func getKey(id int64, prefix []byte) string {
-	s := make([]byte, 0, 50)
+	s := make([]byte, len(prefix), 50)
 	copy(s, prefix)
 	s = append(s, strconv.FormatInt(id, 10)...)
 	return string(s)
