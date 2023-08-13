@@ -11,12 +11,24 @@ func CommentPush(uid, vid int64, content string) (*model.Comment, error) {
 	if err != nil {
 		return nil, err
 	}
+	data.User.ID = uid
+	db.Find(&data.User)
+	video := model.Video{Model: id(vid)}
+	video.HIncrByCommentCount(1)
 	return &data, nil
 }
 
 // CommentDel 删除评论
 func CommentDel(cid int64) error {
-	return db.Delete(&model.Comment{}, cid).Error
+	var data model.Comment
+	data.ID = cid
+	err := db.Find(&data).Error
+	if err != nil {
+		return err
+	}
+	video := model.Video{Model: id(data.VideoID)}
+	video.HIncrByCommentCount(-1)
+	return db.Delete(&data).Error
 }
 
 // CommentGet 获取评论

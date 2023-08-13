@@ -5,9 +5,11 @@ import (
 	"github.com/Godvictory/douyin/internal/bootstrap"
 	"github.com/Godvictory/douyin/utils"
 	"github.com/sirupsen/logrus"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 var (
@@ -31,6 +33,7 @@ func initServer() {
 	bootstrap.InitLog()
 	bootstrap.InitDb()
 	bootstrap.InitRdb()
+	rand.Seed(time.Now().Unix())
 }
 
 // initDaemon 守护进程初始化
