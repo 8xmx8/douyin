@@ -8,7 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var (
+	db       *gorm.DB
+	videoAll []int64
+)
 
 // InitDb 初始化数据库服务
 func InitDb(d *gorm.DB) {
@@ -27,6 +30,9 @@ func InitDb(d *gorm.DB) {
 	if err != nil {
 		log.Fatalf("自定义连接表设置失败,User: %s", err)
 	}
+	go func() {
+		db.Model(&model.Video{}).Select("id").Find(&videoAll)
+	}()
 }
 
 // id 快捷用法返回一个Model{id:val}

@@ -11,7 +11,7 @@ import (
 )
 
 type commentReqs struct {
-	Token       string `form:"token" json:"token" binding:"required"`       // 用户鉴权token
+	Token       string `form:"token" json:"token"`                          // 用户鉴权token
 	VideoId     int64  `form:"video_id" json:"video_id" binding:"required"` // 视频id
 	ActionType  int    `form:"action_type" json:"action_type"`              // 1-发布评论，2-删除评论
 	CommentText string `form:"comment_text" json:"comment_text"`            // 用户填写的评论内容
@@ -53,10 +53,6 @@ func CommentList(c *gin.Context) (int, any) {
 	// 参数绑定
 	if err := common.Bind(c, &reqs); err != nil {
 		return ErrParam(err)
-	}
-	_, err := tokens.CheckToken(reqs.Token)
-	if err != nil {
-		return Err("Token 错误", err)
 	}
 	data, err := db.CommentGet(reqs.VideoId)
 	if err != nil {

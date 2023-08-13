@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/Godvictory/douyin/internal/db"
 	"github.com/Godvictory/douyin/internal/model"
 	"github.com/Godvictory/douyin/utils/tokens"
@@ -27,7 +26,6 @@ func VideoGet(c *gin.Context) (int, any) {
 	var err error
 	claims := new(tokens.MyClaims)
 	token := c.Query("token")
-	t := c.Query("latest_time")
 	if token != "" {
 		claims, err = tokens.CheckToken(token)
 		if err != nil {
@@ -35,16 +33,13 @@ func VideoGet(c *gin.Context) (int, any) {
 		} // 没办法控制客户端退出登录,就这样好了(反正token 3个月才过期)
 	}
 
-	data, err := db.Feed(claims.ID, c.ClientIP(), t)
+	data, err := db.Feed(claims.ID, c.ClientIP())
 	if err != nil {
 		return Err("数据获取出错，请稍后再试.", err)
 	}
 
 	res := H{
 		"video_list": data,
-	}
-	if len(data) > 0 {
-		res["next_time"] = data[len(data)-1].ID
 	}
 	return Ok(res)
 }
@@ -86,33 +81,34 @@ func VideoActionUrl(c *gin.Context) (int, any) {
 		}
 		data.UserID = token.ID
 	}
-	fmt.Println("投稿", data)
+
 	id, msg, err := db.VideoUpload(data.UserID, data.Data, data.Url, data.CoverUrl, data.Title, data.UserCreations)
 	if err != nil {
 		return Err(msg, err)
 	}
-	fmt.Println("投稿", id)
+
 	return Ok(H{"vid": id})
 }
 
 // VideoList 发布列表
 func VideoList(c *gin.Context) (int, any) {
-	var (
-		data []*model.Video
-		reqs userReqs
-	)
+	var reqs userReqs
 	// 参数绑定
 	if err := c.ShouldBindQuery(&reqs); err != nil {
 		return ErrParam(err)
 	}
-	claims, err := tokens.CheckToken(reqs.Token)
-	if err != nil {
-		return Err("Token 错误", err)
+	if reqs.Token != "" {
+		claims, err := tokens.CheckToken(reqs.Token)
+		if err != nil {
+			return Err("Token 错误", err)
+		}
+		if reqs.ID == 0 {
+			reqs.ID = claims.ID
+		}
+	} else if reqs.ID == 0 {
+		return Err("无参数!!!")
 	}
-	if reqs.ID == 0 {
-		reqs.ID = claims.ID
-	}
-	data, err = db.VideoList(reqs.ID)
+	data, err := db.VideoList(reqs.ID)
 	if err != nil {
 		return Err("网卡了,再试一次吧", err)
 	}

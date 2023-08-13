@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var r *rand.Rand
+
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // GetId 获取ID
@@ -18,7 +20,22 @@ func GetId(a, b int64) int64 {
 func RandString(n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
+		b[i] = letterBytes[r.Int63()%int64(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func RandVid(all []int64, n int) (res []int64) {
+	set := make(map[int64]struct{}, n)
+	for len(set) < n {
+		set[all[r.Intn(len(all))]] = struct{}{}
+	}
+	for k := range set {
+		res = append(res, k)
+	}
+	return
+}
+
+func init() {
+	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 }

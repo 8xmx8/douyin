@@ -107,10 +107,10 @@ func RelationFriendList(c *gin.Context) (int, any) {
 	if err != nil {
 		return Err("Token 错误", err)
 	}
-	if reqs.UserId == 0 {
-		reqs.UserId = claims.ID
+	if reqs.UserId != 0 && claims.ID != reqs.UserId {
+		return Err("只能查看自己的朋友哦")
 	}
-	data, err := db.RelationFriendGet(claims.ID, reqs.UserId)
+	data, err := db.RelationFriendGet(claims.ID)
 	if err != nil {
 		return Err("再试试吧", err)
 	}
