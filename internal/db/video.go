@@ -6,21 +6,26 @@ import (
 	"github.com/Godvictory/douyin/internal/model"
 	"github.com/Godvictory/douyin/utils"
 	"github.com/Godvictory/douyin/utils/upload"
-	"mime/multipart"
-
 	"gorm.io/gorm"
+	"mime/multipart"
 )
 
 // Feed 获取视频流
-func Feed(uid int64, ip string) ([]model.Video, error) {
+func Feed(uid int64, ip, ty string, repeat bool) ([]model.Video, error) {
 	var data []model.Video
 	res := make([]model.Video, 0, 10)
 	// 循环20次,随机生成20个主键id,通过IP来减少重复推送
-	for batch := 0; len(res) < 3 && batch < 20; batch++ {
-		rv := utils.RandVid(videoAll, 20)
+	for batch := 0; len(res) < 3 && batch < 6; batch++ {
+		var rv []int64
+		if v, ok := videoAll[ty]; ok {
+			rv = utils.RandVid(v, 20)
+		}
 		db.Set("user_id", uid).Where(rv).Find(&data)
+		utils.RandShuffle(len(data), func(i, j int) {
+			data[i], data[j] = data[j], data[i]
+		})
 		for i := 0; i < len(data) && len(res) < 3; i++ {
-			if data[i].ViewedFilter(ip) {
+			if data[i].ViewedFilter(ip) || repeat {
 				data[i].PlayCount++
 				res = append(res, data[i])
 			}
@@ -30,12 +35,16 @@ func Feed(uid int64, ip string) ([]model.Video, error) {
 }
 
 // VideoUpload 视频投稿
-func VideoUpload(uid int64, file multipart.File, PlayUrl, CoverUrl, title string, UserCreations []*model.UserCreation) (int64, string, error) {
+func VideoUpload(uid int64, file multipart.File, PlayUrl, CoverUrl, title, typeOf string, UserCreations []*model.UserCreation) (int64, string, error) {
+	if typeOf == "" {
+		typeOf = "t"
+	}
 	data := model.Video{
 		AuthorID: uid,
 		PlayUrl:  PlayUrl,
 		CoverUrl: CoverUrl,
 		Title:    title,
+		TypeOf:   typeOf,
 	}
 	// 开启事务,上传失败不添加数据
 	tx := db.Begin()
@@ -71,22 +80,31 @@ func VideoUpload(uid int64, file multipart.File, PlayUrl, CoverUrl, title string
 		tx.Model(&model.User{Model: id(uc.UserID)}).UpdateColumn("work_count", gorm.Expr("work_count + ?", 1))
 	}
 	tx.Commit()
-	videoAll = append(videoAll, data.ID)
+	videoAll["all"] = append(videoAll["all"], data.ID)
+	videoAll[typeOf] = append(videoAll[typeOf], data.ID)
 	return data.ID, "", nil
 }
 
 // VideoLike 视频点赞操作
 func VideoLike(uid, vid int64, _type int) error {
 	var err error
-	association := db.Model(&model.User{Model: id(uid)}).Association("Favorite")
+	// association := db.Model(&model.User{Model: id(uid)}).Omit("Favorite").Association("Favorite")
 	val := &model.Video{Model: id(vid)}
 	switch _type {
 	case 1:
-		err = association.Append(val)
-		val.HIncrByFavoriteCount(1)
+		row := db.Exec("INSERT INTO `user_favorite` (`user_id`,`video_id`) VALUES (?,?)", uid, vid)
+		if row.Error == nil && row.RowsAffected == 1 {
+			val.HIncrByFavoriteCount(1)
+		} else {
+			err = errors.Join(row.Error, errors.New("err:可能已有数据"))
+		}
 	case 2:
-		err = association.Delete(val)
-		val.HIncrByFavoriteCount(-1)
+		row := db.Exec("DELETE FROM user_favorite Where user_id = ? AND video_id = ?", uid, vid)
+		if row.Error == nil && row.RowsAffected == 1 {
+			val.HIncrByFavoriteCount(-1)
+		} else {
+			err = errors.Join(row.Error, errors.New("err:可能无该数据"))
+		}
 	default:
 		err = errors.New("你看看你传的什么东西吧")
 	}
@@ -112,6 +130,25 @@ func VideoList(uid int64) ([]*model.Video, error) {
 	err := db.Set("user_id", uid).Model(&model.User{Model: id(uid)}).Association("Videos").Find(&data)
 	if err != nil {
 		return nil, err
+	}
+	return data, nil
+}
+
+// VideoFollowList 获取关注作品列表
+func VideoFollowList(uid int64) ([]*model.Video, error) {
+	var user []*model.User
+	var data []*model.Video
+	err := db.Set("user_id", uid).Model(&model.User{Model: id(uid)}).Association("Follow").Find(&user)
+	if err != nil {
+		return nil, err
+	}
+	for _, u := range user {
+		var videos []*model.Video
+		err := db.Set("user_id", uid).Model(&model.User{Model: id(u.ID)}).Association("Videos").Find(&videos)
+		if err != nil {
+			return nil, err
+		}
+		data = append(data, videos...)
 	}
 	return data, nil
 }

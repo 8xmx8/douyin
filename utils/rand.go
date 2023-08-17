@@ -36,6 +36,10 @@ func RandVid(all []int64, n int) (res []int64) {
 	return
 }
 
+func RandShuffle(n int, f func(int, int)) {
+	r.Shuffle(n, f)
+}
+
 func init() {
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 }

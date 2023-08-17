@@ -29,6 +29,7 @@ func Init(r *gin.Engine) {
 		newRouter(router, "POST", "publish/action/", handlers.VideoAction)       // 视频投稿
 		newRouter(tester, "POST", "publish/actionUrl/", handlers.VideoActionUrl) // 视频投稿(测试接口)
 		newRouter(router, "GET", "publish/list/", handlers.VideoList)            // 获取发布列表
+		newRouter(router, "GET", "publish/follow/", handlers.VideoFollowList)    // 获取关注视频列表
 	}
 	// 用户类接口
 	{
@@ -36,7 +37,7 @@ func Init(r *gin.Engine) {
 		newRouter(router, "POST", "user/login/", handlers.UserLogin)       // 用户登录
 		newRouter(router, "GET", "user/", handlers.UserInfo)               // 获取用户信息
 	}
-	// 互动类接口
+	// 互动类接口,
 	{
 		newRouter(router, "POST", "favorite/action/", handlers.FavoriteAction) // 点赞操作
 		newRouter(router, "GET", "favorite/list/", handlers.FavoriteList)      // 获取喜欢列表

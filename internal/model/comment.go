@@ -25,7 +25,7 @@ func (c *Comment) BeforeCreate(tx *gorm.DB) (err error) {
 	if c.ID == 0 {
 		c.ID = utils.GetId(2, 20230724)
 	}
-	c.CreateDate = time.Now().Format("2006-01-02")
+	c.CreateDate = time.Now().Format("01-02")
 	return
 }
 

@@ -24,6 +24,7 @@ type (
 		FavoriteCount int64      `json:"favorite_count" gorm:"-"` // 视频的点赞总数
 		CommentCount  int64      `json:"comment_count" gorm:"-"`  // 视频的评论总数
 		// 自建字段
+		TypeOf   string  `json:"typeOf" gorm:"comment:视频类型"`
 		CoAuthor []*User `json:"authors,omitempty" gorm:"many2many:UserCreation;"` // 联合投稿
 	}
 )
@@ -79,6 +80,7 @@ func (v *Video) HIncrByCommentCount(incr int64) int64 {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	key := getKey(v.ID, videoCountKey)
+	//对指定的哈希表中的comment_count字段增加incr的值。
 	v.FavoriteCount, _ = rdb.HIncrBy(ctx, key, "comment_count", incr).Result()
 	return v.FavoriteCount
 }

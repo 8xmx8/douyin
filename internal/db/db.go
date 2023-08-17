@@ -10,7 +10,7 @@ import (
 
 var (
 	db       *gorm.DB
-	videoAll []int64
+	videoAll map[string][]int64
 )
 
 // InitDb 初始化数据库服务
@@ -31,7 +31,18 @@ func InitDb(d *gorm.DB) {
 		log.Fatalf("自定义连接表设置失败,User: %s", err)
 	}
 	go func() {
-		db.Model(&model.Video{}).Select("id").Find(&videoAll)
+		var data []map[string]any
+		db.Model(&model.Video{}).Select("id", "`type_of`").Find(&data)
+		videoAll = make(map[string][]int64, 10)
+		videoAll["all"] = make([]int64, 0, len(data))
+		for i := range data {
+			id := data[i]["id"].(int64)
+			videoAll["all"] = append(videoAll["all"], id)
+			if data[i]["type_of"] != nil {
+				ty := data[i]["type_of"].(string)
+				videoAll[ty] = append(videoAll[ty], id)
+			}
+		}
 	}()
 }
 
