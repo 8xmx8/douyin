@@ -36,16 +36,16 @@ func InitConf() int {
 	if err != nil {
 		log.Fatalf("配置读取错误，请检查,{%s}", err)
 	}
-	err = json.Unmarshal(file, &conf.Conf)
+	data := os.ExpandEnv(string(file))
+	err = json.Unmarshal([]byte(data), &conf.Conf)
 	if err != nil {
 		log.Fatalf("配置文件解析错误，请检查,{%s}", err)
 	}
-
 	// 解析完在回写一次,保证配置文件格式最新
-	fileData, _ := json.MarshalIndent(conf.Conf, "", "  ")
-	err = os.WriteFile(configPath, fileData, 0o666)
-	if err != nil {
-		log.Error("配置文件更新错误，请检查,{%s}", err)
-	}
+	//fileData, _ := json.MarshalIndent(conf.Conf, "", "  ")
+	//err = os.WriteFile(configPath, fileData, 0o666)
+	//if err != nil {
+	//	log.Error("配置文件更新错误，请检查,{%s}", err)
+	//}
 	return 0
 }
