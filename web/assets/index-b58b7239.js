@@ -1,0 +1,1 @@
+import{_ as e}from"./videoList.vue_vue_type_style_index_0_lang-157dca39.js";import{E as o,H as t,I as r}from"./index-483b83c5.js";import"./positionBox-37075afa.js";import"./_commonjsHelpers-de833af9.js";/* empty css                   */const f=o({__name:"index",setup(a){return(p,m)=>(t(),r(e,{type:"all"}))}});export{f as default};

@@ -1,0 +1,1 @@
+const u=(o,i=200)=>{let e=0;return(...n)=>new Promise(t=>{e&&(clearTimeout(e),t("cancel")),e=window.setTimeout(()=>{o.apply(void 0,n),e=0,t("done")},i)})},a=(o,i=200)=>{let e=0,n=null;return(...t)=>{const l=r=>{e===0&&(e=r),r-e>=i?(o.apply(void 0,n),n=null,e=0):window.requestAnimationFrame(l)};n===null&&window.requestAnimationFrame(l),n=t}};export{a as L,u as x};
