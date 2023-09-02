@@ -13,25 +13,26 @@ import (
 // Feed 获取视频流
 func Feed(uid int64, ip, ty string, repeat bool) ([]model.Video, error) {
 	var data []model.Video
-	res := make([]model.Video, 0, 10)
+	res := make([]int64, 0, 10)
 	// 循环20次,随机生成20个主键id,通过IP来减少重复推送
 	for batch := 0; len(res) < 3 && batch < 6; batch++ {
 		var rv []int64
 		if v, ok := videoAll[ty]; ok {
 			rv = utils.RandVid(v, 20)
 		}
-		db.Set("user_id", uid).Where(rv).Find(&data)
-		utils.RandShuffle(len(data), func(i, j int) {
-			data[i], data[j] = data[j], data[i]
-		})
-		for i := 0; i < len(data) && len(res) < 3; i++ {
-			if data[i].ViewedFilter(ip) || repeat {
-				data[i].PlayCount++
-				res = append(res, data[i])
+		for i := 0; i < len(rv) && len(res) < 3; i++ {
+			if model.ViewedFilter(rv[i], ip) || repeat {
+				res = append(res, rv[i])
 			}
 		}
 	}
-	return res, nil
+	if len(res) > 0 {
+		db.Set("user_id", uid).Where(res).Find(&data)
+		utils.RandShuffle(len(data), func(i, j int) {
+			data[i], data[j] = data[j], data[i]
+		})
+	}
+	return data, nil
 }
 
 // VideoUpload 视频投稿
