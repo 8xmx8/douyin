@@ -52,10 +52,11 @@ func (v *Video) AfterFind(tx *gorm.DB) (err error) {
 	return
 }
 
-func (v *Video) ViewedFilter(ip string) bool {
-	playKey := getKey(v.ID, videoPlayCountKey)
+func ViewedFilter(id int64, ip string) bool {
+	playKey := getKey(id, videoPlayCountKey)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
+	//使用 Redis 的 HyperLogLog 数据结构将 ip 添加到名为 playKey 的集合中。
 	val, _ := rdb.PFAdd(ctx, playKey, ip).Result()
 	// 1:未看 0:已看
 	return val == 1
