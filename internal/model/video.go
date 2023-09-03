@@ -45,7 +45,9 @@ func (v *Video) AfterFind(tx *gorm.DB) (err error) {
 		}
 	}
 	// v.PlayCount, _ = rdb.HIncrBy(ctx, key, "play_count", 1).Result()
+	//使用 Redis 的 HyperLogLog 数据结构，获取指定 HyperLogLog 集合 playKey 的基数（cardinality）并将结果赋值给变量 v.PlayCount。
 	v.PlayCount, _ = rdb.PFCount(ctx, playKey).Result()
+	//使用 Redis 的哈希（Hash）数据结构，获取指定键 key 中字段 "favorite_count" 的值，并将其转换为 int64 类型。
 	v.FavoriteCount, _ = rdb.HGet(ctx, key, "favorite_count").Int64()
 	v.CommentCount, _ = rdb.HGet(ctx, key, "comment_count").Int64()
 	tx.Find(&v.Author, v.AuthorID)
@@ -56,7 +58,7 @@ func ViewedFilter(id int64, ip string) bool {
 	playKey := getKey(id, videoPlayCountKey)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	//使用 Redis 的 HyperLogLog 数据结构将 ip 添加到名为 playKey 的集合中。
+	//使用 Redis 的 HyperLogLog 数据结构将 ip 添加到名为 playKey 的集合中。返回集合基数
 	val, _ := rdb.PFAdd(ctx, playKey, ip).Result()
 	// 1:未看 0:已看
 	return val == 1
@@ -73,6 +75,7 @@ func (v *Video) HIncrByFavoriteCount(incr int64) int64 {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	key := getKey(v.ID, videoCountKey)
+	//对指定的哈希表中的favorite_count字段增加incr的值。获取新的操作数，即增量后的操作数
 	v.FavoriteCount, _ = rdb.HIncrBy(ctx, key, "favorite_count", incr).Result()
 	return v.FavoriteCount
 }
@@ -81,7 +84,7 @@ func (v *Video) HIncrByCommentCount(incr int64) int64 {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	key := getKey(v.ID, videoCountKey)
-	//对指定的哈希表中的comment_count字段增加incr的值。
+	//对指定的哈希表中的comment_count字段增加incr的值。获取新的操作数，即增量后的操作数
 	v.FavoriteCount, _ = rdb.HIncrBy(ctx, key, "comment_count", incr).Result()
 	return v.FavoriteCount
 }
