@@ -21,7 +21,7 @@ func Feed(uid int64, ip, ty string, repeat bool) ([]model.Video, error) {
 			rv = utils.RandVid(v, 20)
 		}
 		for i := 0; i < len(rv) && len(res) < 3; i++ {
-			if model.ViewedFilter(rv[i], ip) || repeat {
+			if repeat || model.ViewedFilter(rv[i], ip) {
 				res = append(res, rv[i])
 			}
 		}

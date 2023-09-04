@@ -8,8 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var JwtKey = []byte(conf.Conf.JwtSecret)
-
 type MyClaims struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
@@ -28,13 +26,13 @@ func GetToken(id int64, username string) (string, error) {
 		},
 	}
 	reqClaim := jwt.NewWithClaims(jwt.SigningMethodHS256, SetClaims)
-	return reqClaim.SignedString(JwtKey)
+	return reqClaim.SignedString([]byte(conf.Conf.JwtSecret))
 }
 
 // CheckToken 验证token
 func CheckToken(token string) (*MyClaims, error) {
 	key, err := jwt.ParseWithClaims(token, &MyClaims{}, func(*jwt.Token) (any, error) {
-		return JwtKey, nil
+		return []byte(conf.Conf.JwtSecret), nil
 	})
 	if err != nil {
 		return nil, err

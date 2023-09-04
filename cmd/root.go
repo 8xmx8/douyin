@@ -30,6 +30,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&dataDir, "data", "data", "修改配置文件路径")
 	rootCmd.PersistentFlags().BoolVar(&flags.Debug, "debug", false, "Debug 模式（更多的日志输出）")
 	rootCmd.PersistentFlags().BoolVar(&flags.Dev, "dev", false, "开发环境")
+	rootCmd.PersistentFlags().BoolVar(&flags.Tst, "Tst", false, "测试环境")
 	rootCmd.PersistentFlags().BoolVar(&flags.LogStd, "log-std", false, "日志强制打印到控制台")
 	rootCmd.PersistentFlags().BoolVar(&flags.Memory, "memory", false, "使用内存数据库")
 

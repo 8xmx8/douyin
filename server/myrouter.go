@@ -3,8 +3,9 @@ package server
 import (
 	"github.com/Godvictory/douyin/cmd/flags"
 	"github.com/Godvictory/douyin/server/handlers"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MyHandler func(*gin.Context) (int, any)
@@ -36,7 +37,7 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 					req["status_msg"] = data
 				case error:
 					// 判断是否debug模式，是的话返回错误信息
-					if flags.Dev || flags.Debug {
+					if flags.Dev || flags.Debug || flags.Tst {
 						req["errmsg"] = data.(error).Error()
 					}
 				case handlers.MyErr:
@@ -44,7 +45,7 @@ func decorator() func(h MyHandler) gin.HandlerFunc {
 					req["status_msg"] = e.Msg
 					c.Set("msg", e.Msg)
 					// 判断是否debug模式，是的话返回错误信息
-					if flags.Dev || flags.Debug {
+					if flags.Dev || flags.Debug || flags.Tst {
 						errs := make([]string, 0, 10)
 						for i := range e.Errs {
 							if e.Errs[i] == nil {

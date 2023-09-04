@@ -30,7 +30,7 @@ func InitDb(d *gorm.DB) {
 	if err != nil {
 		log.Fatalf("自定义连接表设置失败,User: %s", err)
 	}
-	go func() {
+	{
 		var data []map[string]any
 		db.Model(&model.Video{}).Select("id", "`type_of`").Find(&data)
 		videoAll = make(map[string][]int64, 10)
@@ -43,7 +43,7 @@ func InitDb(d *gorm.DB) {
 				videoAll[ty] = append(videoAll[ty], id)
 			}
 		}
-	}()
+	}
 }
 
 // id 快捷用法返回一个Model{id:val}
