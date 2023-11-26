@@ -18,7 +18,7 @@ func DefaultConfig() Config {
 		Redis: confRedis{
 			Host:     "127.0.0.1",
 			Port:     6379,
-			Password: "",
+			Password: "123456",
 			Db:       3,
 		},
 		Log: confLog{
