@@ -17,6 +17,5 @@ func main() {
 	//	log.Fatalf("failed to start trace: %v", err)
 	//}
 	//defer trace.Stop()
-
 	cmd.Execute()
 }
